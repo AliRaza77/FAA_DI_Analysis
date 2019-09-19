@@ -1,22 +1,14 @@
 %% Housecleaning
 clear all, close all,  clc
 %% Parameters
-Frequencies = [200 250 300 350];  %Number of unique frequencies
+Frequencies = [200];  %Number of unique frequencies
 
-
-Plot_All = 0;
-Lines_Per_Plot = 10;
+Plot_All = 1;
 Elim = [];
-selectpath = [55 56 57];   %Enter the Path serial number in the square brackets from
-                              %the Unique_Paths variable to plot the targetted path.
-                              %e.g selectpath = [1 2 3 4]; for all paths use selectpath = 1:36;
-                              
-Start_Date= 1;             %Enter the first data point which will be displayed in the final plot.
-isLegend = 1;               %Enter 1 for plotting Legend, 0 for no Legend.
-Save_UP=1;                 %Saves all the Unique Paths in the loaded files on an excel sheet.
-AddCycles = 0;
-%Enter the name of the file. **WARNING**, please include characters like '_' (underscore)
-%until the first number in the filename
+selectpath = []; 
+                
+AddCycles = 0; %This feature does not work yet.
+
 FilePrefix = 'ALP3_';
 %% Import
 [file,path]=uigetfile('Multiselect','on','*.dix');
@@ -40,6 +32,8 @@ end
 title1 = num2str(dat(19:24));
 filename= sortrows(filename,[4 1 2 5 6 7]);
 filename(:,2:7) = [];
+F100= [];
+F150= [];
 F200= [];
 F250=[];
 F300= [];
@@ -47,14 +41,21 @@ F350=[];
 F400=[];
 F450=[];
 F500=[];
-
-
+%% Hidden Paramters
+Start_Date= 1; 
+Lines_Per_Plot = 10;
+isLegend = 1; 
+Save_UP=1; 
 %%
 for FreqNum = 1:numel(Frequencies);
     for inNum =1:numel(filename)
         intFile = char(filename(inNum));
         if intFile(24:26) == char(num2str(Frequencies(FreqNum)))
-            if intFile(24:26) == char('200')
+            if intFile(24:26) == char('100')
+                F100 = [F100;intFile];
+            elseif intFile(24:26) == char('150')
+                F150 = [F150;intFile];
+            elseif intFile(24:26) == char('200')
                 F200 = [F200;intFile];
             elseif intFile(24:26) == char('250')
                 F250 = [F250;intFile];
@@ -73,16 +74,34 @@ for FreqNum = 1:numel(Frequencies);
     end
 end
 try
+F150 = cellstr(F150);
+end
+try
+F150 = cellstr(F150);
+end
+try
 F200 = cellstr(F200);
+end
+try
 F250 = cellstr(F250);
+end
+try
 F300 = cellstr(F300);
+end
+try
 F350 = cellstr(F350);
+end
+try
 F400 = cellstr(F400);
+end
+try
 F450 = cellstr(F450);
+end
+try
 F500 = cellstr(F500);
 end
 %%
-Reference = [F200,F250,F300,F350,F400,F450];
+Reference = [F100,F150,F200,F250,F300,F350,F400,F450];
 if AddCycles == 1;
 XFilename = [FilePrefix 'SHM_directory.xlsx'];
 [rowOfRef,~] = size(Reference);
@@ -96,6 +115,40 @@ xdata = 1;
 %% Import and Process
 
 data = [];
+
+try
+ if iscell(F100)
+  for n = 1:length(F100)
+    data = [data',importdata(fullfile(path,F100{n}))']'; 
+  end
+else
+  data = importdata(fullfile(path,F100));
+end
+
+   title1='100kHz';
+PathDirectory100 = FAA_Analysis(selectpath, Start_Date, isLegend, Save_UP, FilePrefix,data,title1,Elim,Plot_All,Lines_Per_Plot,xSize,xdata);
+if FreqNum>1
+figure
+end
+end
+
+try
+ if iscell(F150)
+  for n = 1:length(F150)
+    data = [data',importdata(fullfile(path,F150{n}))']'; 
+  end
+else
+  data = importdata(fullfile(path,F150));
+end
+
+   title1='150kHz';
+PathDirectory200 = FAA_Analysis(selectpath, Start_Date, isLegend, Save_UP, FilePrefix,data,title1,Elim,Plot_All,Lines_Per_Plot,xSize,xdata);
+if FreqNum>1
+figure
+end
+end
+
+try
  if iscell(F200)
   for n = 1:length(F200)
     data = [data',importdata(fullfile(path,F200{n}))']'; 
@@ -108,6 +161,7 @@ end
 PathDirectory200 = FAA_Analysis(selectpath, Start_Date, isLegend, Save_UP, FilePrefix,data,title1,Elim,Plot_All,Lines_Per_Plot,xSize,xdata);
 if FreqNum>1
 figure
+end
 end
 
 
